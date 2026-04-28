@@ -1,0 +1,52 @@
+{
+  "name": "@clamp-sh/event-schema",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Reference CLI for the Event Schema spec — a portable, typed YAML format for declaring product analytics events. Validate event-schema.yaml against the spec and generate TypeScript types from it.",
+  "license": "MIT",
+  "homepage": "https://clamp.sh/docs/event-schema",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clamp-sh/event-schema.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clamp-sh/event-schema/issues"
+  },
+  "keywords": [
+    "analytics",
+    "event-schema",
+    "tracking-plan",
+    "typescript",
+    "codegen",
+    "schema",
+    "events"
+  ],
+  "main": "dist/cli.js",
+  "bin": {
+    "event-schema": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "examples",
+    "meta-schema.json",
+    "SPEC.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/cli.ts --format esm --no-dts --clean",
+    "dev": "tsup src/cli.ts --format esm --no-dts --watch",
+    "examples:regenerate": "tsx scripts/regenerate-examples.ts",
+    "examples:check": "tsx scripts/regenerate-examples.ts && git diff --exit-code examples/"
+  },
+  "dependencies": {
+    "ajv": "^8",
+    "yaml": "^2"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsup": "^8",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}
