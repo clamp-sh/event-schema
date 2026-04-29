@@ -1,0 +1,52 @@
+# Schema with derived metrics declared. Two count metrics and one ratio.
+# Demonstrates the 0.3 metrics section without runtime concerns; how the
+# values are actually computed at query time is left to the consuming
+# tool. The spec just locks down the names, definitions, and intent.
+
+version: "0.3"
+
+events:
+  signup_completed:
+    intent: |
+      Account creation succeeded. Numerator of every funnel.
+    properties:
+      plan:
+        type: enum
+        values: [free, pro]
+        required: true
+
+  subscription_started:
+    intent: |
+      Stripe checkout completed; user is now on a paid plan.
+    properties:
+      plan:
+        type: enum
+        values: [pro]
+        required: true
+
+metrics:
+  daily_signups:
+    type: count
+    intent: New signups per day. Top-of-funnel volume.
+    event: signup_completed
+    grain: day
+
+  weekly_pro_signups:
+    type: count
+    intent: Pro-tier signups per week. Distinguishes free trial from real intent.
+    event: signup_completed
+    grain: week
+    filter:
+      property: plan
+      value: pro
+
+  weekly_signup_to_paid_cvr:
+    type: ratio
+    intent: |
+      % of signups that converted to paid in the same week. Read as a
+      board-level lever, not a strict cohort retention metric.
+    grain: week
+    numerator:
+      event: subscription_started
+    denominator:
+      event: signup_completed

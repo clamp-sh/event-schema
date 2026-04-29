@@ -1,0 +1,48 @@
+# Ecommerce schema — exercises the money type and quantity numerics.
+# Suitable as a starting point for any storefront.
+
+version: "0.1"
+
+events:
+  product_viewed:
+    intent: A user viewed a product detail page.
+    properties:
+      sku:
+        type: string
+        required: true
+      price:
+        type: money
+        required: true
+      category:
+        type: string
+
+  add_to_cart:
+    intent: A product was added to the cart.
+    properties:
+      sku:
+        type: string
+        required: true
+      quantity:
+        type: number
+        required: true
+      unit_price:
+        type: money
+        required: true
+
+  checkout_completed:
+    intent: |
+      An order was successfully paid. The numerator of the storefront's
+      primary conversion funnel.
+    properties:
+      order_id:
+        type: string
+        required: true
+      total:
+        type: money
+        required: true
+      items_count:
+        type: number
+        required: true
+      first_purchase:
+        type: boolean
+        required: true

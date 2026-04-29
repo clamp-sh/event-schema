@@ -1,0 +1,13 @@
+# The smallest useful schema — one event, one property. Anyone reading this
+# in under 10 seconds should understand the format.
+
+version: "0.1"
+
+events:
+  signup:
+    intent: A user created an account.
+    properties:
+      method:
+        type: enum
+        values: [email, github, google]
+        required: true

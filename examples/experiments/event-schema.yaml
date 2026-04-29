@@ -1,0 +1,46 @@
+# Schema with experiments declared. Two A/B tests on a SaaS funnel —
+# variants are referenced from a canonical exposure event. Demonstrates
+# the spec's 0.2 experiments section without runtime concerns.
+
+version: "0.2"
+
+events:
+  signup_completed:
+    intent: Account creation succeeded.
+    properties:
+      plan:
+        type: enum
+        values: [free, pro]
+        required: true
+
+  exposure:
+    intent: |
+      Canonical exposure event fired the first time a user is bucketed
+      into an experiment. Wire whichever event name your platform uses
+      ($exposure on Amplitude, $experiment_started on Mixpanel) — the
+      property shape is the same.
+    properties:
+      flag_key:
+        type: string
+        required: true
+        description: Experiment name. Should match a key in the experiments section.
+      variant:
+        type: string
+        required: true
+        description: Variant name from the experiment's variants list.
+
+experiments:
+  pricing_redesign_2026:
+    intent: |
+      A/B test on the /pricing hero — long-form copy vs short-form
+      with an embedded video.
+    variants: [control, long_copy, short_video]
+    started: "2026-04-15"
+
+  checkout_flow_2026:
+    intent: |
+      Single-page vs multi-step checkout. Measures completion rate
+      and average time-to-pay.
+    variants: [control, single_page]
+    started: "2026-03-01"
+    ended: "2026-04-12"

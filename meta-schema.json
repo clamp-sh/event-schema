@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://event-schema.dev/v0.3/meta-schema.json",
+  "title": "Event Schema v0.3 meta-schema",
+  "description": "Validates an Event Schema document against the v0.3 spec.",
+  "type": "object",
+  "required": ["version", "events"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^0\\.[0-9]+(\\.[0-9]+)?$",
+      "description": "Spec version this schema conforms to."
+    },
+    "events": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/event" }
+      },
+      "additionalProperties": false
+    },
+    "experiments": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/experiment" }
+      },
+      "additionalProperties": false,
+      "description": "A/B tests / experiments declared once and referenced by name in exposure-event tracking. Optional; v0.1 schemas omit this section."
+    },
+    "metrics": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/metric" }
+      },
+      "additionalProperties": false,
+      "description": "Named metrics derived from the event stream. Optional; added in 0.3."
+    }
+  },
+  "patternProperties": {
+    "^x-": true
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "event": {
+      "type": "object",
+      "required": ["properties"],
+      "properties": {
+        "intent": { "type": "string" },
+        "properties": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/property" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "patternProperties": {
+        "^x-": true
+      },
+      "additionalProperties": false
+    },
+    "property": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["string", "number", "boolean", "enum", "money"] },
+        "required": { "type": "boolean" },
+        "description": { "type": "string" },
+        "examples": { "type": "array" },
+        "values": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        }
+      },
+      "patternProperties": {
+        "^x-": true
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "enum" } }, "required": ["type"] },
+          "then": { "required": ["values"] },
+          "else": { "not": { "required": ["values"] } }
+        }
+      ]
+    },
+    "experiment": {
+      "type": "object",
+      "required": ["variants"],
+      "properties": {
+        "intent": { "type": "string" },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "minItems": 2,
+          "uniqueItems": true,
+          "contains": { "const": "control" },
+          "description": "List of variant names. Must include exactly one named 'control' and at least one treatment."
+        },
+        "started": {
+          "type": "string",
+          "description": "ISO date the experiment went live. Optional."
+        },
+        "ended": {
+          "type": "string",
+          "description": "ISO date the experiment was archived. Optional."
+        }
+      },
+      "patternProperties": {
+        "^x-": true
+      },
+      "additionalProperties": false
+    },
+    "metricFilter": {
+      "type": "object",
+      "required": ["property", "value"],
+      "properties": {
+        "property": { "type": "string" },
+        "value": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "countBody": {
+      "type": "object",
+      "required": ["event"],
+      "properties": {
+        "event": { "type": "string" },
+        "filter": { "$ref": "#/$defs/metricFilter" }
+      },
+      "additionalProperties": false
+    },
+    "metric": {
+      "type": "object",
+      "required": ["type", "grain"],
+      "properties": {
+        "type": { "enum": ["count", "ratio"] },
+        "intent": { "type": "string" },
+        "grain": { "enum": ["day", "week", "month"] },
+        "event": { "type": "string" },
+        "filter": { "$ref": "#/$defs/metricFilter" },
+        "numerator": { "$ref": "#/$defs/countBody" },
+        "denominator": { "$ref": "#/$defs/countBody" }
+      },
+      "patternProperties": {
+        "^x-": true
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "count" } }, "required": ["type"] },
+          "then": {
+            "required": ["event"],
+            "not": { "anyOf": [{ "required": ["numerator"] }, { "required": ["denominator"] }] }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "ratio" } }, "required": ["type"] },
+          "then": {
+            "required": ["numerator", "denominator"],
+            "not": { "anyOf": [{ "required": ["event"] }, { "required": ["filter"] }] }
+          }
+        }
+      ]
+    }
+  }
+}

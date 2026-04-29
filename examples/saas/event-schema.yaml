@@ -1,0 +1,48 @@
+# Realistic B2B SaaS schema — multiple events, common property patterns,
+# multi-line intents, an event with no properties.
+
+version: "0.1"
+
+events:
+  signup_completed:
+    intent: |
+      Account creation succeeded. Numerator of every funnel that ends at
+      "they are a real user".
+    properties:
+      plan:
+        type: enum
+        values: [free, pro, growth]
+        required: true
+      method:
+        type: enum
+        values: [email, github, google]
+        required: true
+
+  cta_click:
+    intent: |
+      Top-of-funnel engagement signal — which CTA earned the click.
+      Used for per-CTA conversion attribution and copy testing.
+    properties:
+      location:
+        type: string
+        required: true
+        description: Where on the page the CTA lives.
+        examples: [hero_primary, nav_signup, final_cta_secondary]
+      destination:
+        type: string
+        required: true
+        description: The pathname (or external URL) the click navigates to.
+
+  feature_used:
+    intent: A core product feature was triggered.
+    properties:
+      feature:
+        type: enum
+        values: [export, share, comment, invite]
+        required: true
+      via_keyboard_shortcut:
+        type: boolean
+
+  app_opened:
+    intent: The user launched the app. No additional properties needed.
+    properties: {}
